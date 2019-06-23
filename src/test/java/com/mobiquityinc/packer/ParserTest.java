@@ -1,13 +1,16 @@
 package com.mobiquityinc.packer;
 
+import com.mobiquityinc.model.Package;
 import com.mobiquityinc.model.Thing;
-import org.hamcrest.collection.IsIterableWithSize;
-import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.collection.IsCollectionWithSize;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import java.nio.charset.Charset;
-import java.util.Map;
+import java.util.List;
 
 public class ParserTest {
 
@@ -18,17 +21,22 @@ public class ParserTest {
     @Test
     public void parseThings() {
         String test = getTestUtfString("(1,85,€29) (2,14.55,€74)");
-        Map<Integer, Thing> result = Parser.parseThings(test);
-        assertThat(result.entrySet(), IsIterableWithSize.iterableWithSize(2));
-        assertThat(result, IsMapContaining.hasKey(1));
-        assertThat(result, IsMapContaining.hasKey(2));
-        Thing expected0 = Thing.builder().weight(85).cost(29).build();
-        assertThat(result, IsMapContaining.hasValue(expected0));
-        Thing expected1 = Thing.builder().weight(14.55).cost(74).build();
-        assertThat(result, IsMapContaining.hasValue(expected1));
+        List<Thing> result = Parser.parseThings(test);
+        assertThat(result, IsCollectionWithSize.hasSize(2));
+        Thing expected0 = Thing.builder().id(1).weight(85).cost(29).build();
+        Thing expected1 = Thing.builder().id(2).weight(14.55).cost(74).build();
+        assertThat(result, IsIterableContainingInOrder.contains(expected0, expected1));
     }
 
-    private String getTestUtfString(String text) {
+    private static String getTestUtfString(String text) {
         return new String(text.getBytes(), Charset.forName("UTF-8"));
+    }
+
+    @Test
+    public void parsePackage() {
+        String test = getTestUtfString("56 : (1,90.99,€13) (2,33.6,€40) (3,43,€10)");
+        Package result = Parser.parsePackage(test);
+        assertThat(result.getThings(), IsCollectionWithSize.hasSize(3));
+        assertEquals(56, result.getCapacity());
     }
 }

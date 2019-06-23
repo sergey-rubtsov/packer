@@ -5,8 +5,8 @@ import com.mobiquityinc.model.Package;
 import com.mobiquityinc.model.Thing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Packer {
@@ -33,23 +33,34 @@ public class Packer {
     }
 
     /**
-     * @param things we can't effective solve 0-1 Knapsack problem for double weights,
-     *               so we need to round them to integers and scale all weights
-     * @return scale value
+     * @param things - list of items
+     *               We can't effectively solve 0-1 Knapsack problem for non-integer
+     *               values of weights, so we need to scale them to integers and
+     *               for that the factor need to be calculated
+     * @return factor value
      */
-    private static int scaleWeights(Map<Integer, Thing> things) {
-        things.values().forEach(v -> {
-            double weight = v.getWeight() * 100;
-            double basis = Math.floor(weight) * 100;
-            if (weight - basis > 10) {
-                System.out.println(v.getWeight() + ">");
-            } else System.out.println(v.getWeight() + "<");
-
-        });
-        return 1;
+    protected static int calculateFactor(List<Thing> things) {
+        int result = 1;
+        for (Thing thing : things) {
+            if (hasDecimal(thing.getWeight())) {
+                result = 10;
+            }
+            if (hasCentesimal(thing.getWeight())) {
+                return 100;
+            }
+        }
+        return result;
     }
 
-    private static String processPackage(int capacity, Map<Integer, Thing> things) {
+    private static boolean hasCentesimal(double number) {
+        return (number * 10) % 1 != 0;
+    }
+
+    private static boolean hasDecimal(double number) {
+        return number % 1 != 0;
+    }
+
+    protected static String processPackage(int capacity, List<Thing> things) {
         List<Integer> items = solveUnboundedKnapsackProblem(capacity, things);
         if (items.isEmpty()) {
             return "-";
@@ -57,27 +68,36 @@ public class Packer {
         return items.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
-    private static List<Integer> solveUnboundedKnapsackProblem(int capacity, Map<Integer, Thing> things) {
-        int factor = scaleWeights(things);
+    private static List<Integer> solveUnboundedKnapsackProblem(int capacity, List<Thing> things) {
+        int factor = calculateFactor(things);
+        List<Integer> items = new ArrayList<>();
         capacity = capacity * factor;
-        int matrix[][] = new int[things.size() + 1][capacity + 1];
+        int[][] matrix = new int[things.size() + 1][capacity + 1];
         for (int i = 0; i <= things.size(); i++) {
             for (int j = 0; j <= capacity; j++) {
                 if (i == 0 || j == 0) {
                     matrix[i][j] = 0;
                 } else {
                     Thing thing = things.get(i - 1);
-                    if (thing.getWeight() <= j) {
+                    if (thing.getWeight() * factor <= j) {
                         matrix[i][j] = Math.max(thing.getCost() +
-                            matrix[i - 1][j - (int) Math.round(thing.getWeight())], matrix[i - 1][j]);
+                            matrix[i - 1][j - (int) (thing.getWeight() * factor)], matrix[i - 1][j]);
                     } else {
                         matrix[i][j] = matrix[i - 1][j];
                     }
                 }
-
             }
         }
-        return new ArrayList<>();
+        int result = matrix[things.size()][capacity];
+        for (int i = things.size(); i > 0 && result > 0; i--) {
+            if (result != matrix[i - 1][capacity]) {
+                items.add(things.get(i - 1).getId());
+                result = result - things.get(i - 1).getCost();
+                capacity = capacity - (int) things.get(i - 1).getWeight();
+            }
+        }
+        Collections.sort(items);
+        return items;
     }
 
 }

@@ -16,9 +16,21 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
-    private static final Pattern PACKAGE_PATTERN = Pattern.compile("(\\d+)\\s*[:]\\s*(.*)\\n");
+    private static final Pattern PACKAGE_PATTERN = Pattern.compile("(\\d+)\\s*[:](.*)");
     private static final Pattern ITEMS_PATTERN = Pattern
             .compile("[(](\\d+)[,](\\d+([.]\\d+)?)[,]\\p{Sc}(\\d+)[)]", Pattern.UNICODE_CHARACTER_CLASS);
+
+    protected static Package parsePackage(String things) {
+        Matcher matcher = PACKAGE_PATTERN.matcher(things);
+        if (matcher.find()) {
+            return Package.builder()
+                    .capacity(Integer.valueOf(matcher.group(1)))
+                    .things(parseThings(matcher.group(2)))
+                    .build();
+        } else {
+            throw new APIException("Unable to parse line " + things);
+        }
+    }
 
     protected static List<Package> parsePackages(String filePath) {
         try {
@@ -26,12 +38,8 @@ public class Parser {
             scanner.useDelimiter(System.getProperty("line.separator"));
             List<Package> result = new ArrayList<>();
             while (scanner.hasNext()) {
-                String[] s = scanner.next().split(":");
-                Package item = Package.builder()
-                        .capacity(Integer.valueOf(s[0].trim()))
-                        .things(parseThings(s[1].trim()))
-                        .build();
-                result.add(item);
+                String line = scanner.next();
+                result.add(parsePackage(line));
             }
             return result;
         } catch (FileNotFoundException e) {
@@ -46,14 +54,14 @@ public class Parser {
      *               UTF-16 on input if this is not already being done
      * @return the list of things need to be chosen.
      */
-    protected static Map<Integer, Thing> parseThings(String things) {
+    protected static List<Thing> parseThings(String things) {
         Matcher matcher = ITEMS_PATTERN.matcher(things);
-        Map<Integer, Thing> result = new HashMap<>();
+        List<Thing> result = new ArrayList<>();
         while (matcher.find()) {
-            Integer index = Integer.valueOf(matcher.group(1));
+            int index = Integer.parseInt(matcher.group(1));
             double weight = Double.parseDouble(matcher.group(2));
             int cost = Integer.parseInt(matcher.group(4));
-            result.put(index, Thing.builder().weight(weight).cost(cost).build());
+            result.add(Thing.builder().id(index).weight(weight).cost(cost).build());
         }
         return result;
     }
