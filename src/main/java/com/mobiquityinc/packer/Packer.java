@@ -6,6 +6,7 @@ import com.mobiquityinc.model.Thing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,53 +24,49 @@ public class Packer {
      * @throws APIException if incorrect parameters are being passed.
      */
     public static String pack(String filePath) throws APIException {
-        List<Package> packages = Parser.parsePackages(filePath);
+        List<Package> packages = Parser.parseInputFile(filePath);
         return processPackages(packages);
     }
 
+    /**
+     * @param packages list of parsed packages.
+     * @return a list of things that into the package
+     * (list of items’ index numbers separated by comma converted to String)
+     */
     private static String processPackages(List<Package> packages) {
         return packages.stream().map(p -> processPackage(p.getCapacity(), p.getThings()))
                 .collect(Collectors.joining("\n"));
     }
 
     /**
-     * @param things - list of items
-     *               We can't effectively solve 0-1 Knapsack problem for non-integer
-     *               values of weights, so we need to scale them to integers and
-     *               for that the factor need to be calculated
-     * @return factor value
+     * @param capacity weight limit of package.
+     * @param things the list of all things for the package.
+     * @return the list of things need to be chosen.
      */
-    protected static int calculateFactor(List<Thing> things) {
-        int result = 1;
-        for (Thing thing : things) {
-            if (hasDecimal(thing.getWeight())) {
-                result = 10;
-            }
-            if (hasCentesimal(thing.getWeight())) {
-                return 100;
-            }
-        }
-        return result;
-    }
-
-    private static boolean hasCentesimal(double number) {
-        return (number * 10) % 1 != 0;
-    }
-
-    private static boolean hasDecimal(double number) {
-        return number % 1 != 0;
-    }
-
     protected static String processPackage(int capacity, List<Thing> things) {
         List<Integer> items = solveUnboundedKnapsackProblem(capacity, things);
         if (items.isEmpty()) {
             return "-";
         }
+        Collections.sort(items);
         return items.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
+    /**
+     * The algorithm determines which things to put into the package so that the
+     * total weight is less than or equal to the package limit and the total cost
+     * is as large as possible.
+     * In case there is more than one thing with the same price it would choose
+     * the thing which weights less.
+     * @param capacity weight limit of package.
+     * @param things the list of all things for the package.
+     * @return the list of things need to be chosen.
+     */
     private static List<Integer> solveUnboundedKnapsackProblem(int capacity, List<Thing> things) {
         int factor = calculateFactor(things);
+        //to send a package which weights less in case there is more than one package with the
+        //same price, we need to group them by cost and sort by weight.
+        things.sort(Comparator.comparingInt(Thing::getCost).thenComparing(Thing::getWeight));
         List<Integer> items = new ArrayList<>();
         capacity = capacity * factor;
         int[][] matrix = new int[things.size() + 1][capacity + 1];
@@ -91,13 +88,40 @@ public class Packer {
         int result = matrix[things.size()][capacity];
         for (int i = things.size(); i > 0 && result > 0; i--) {
             if (result != matrix[i - 1][capacity]) {
-                items.add(things.get(i - 1).getId());
+                items.add(things.get(i - 1).getIndex());
                 result = result - things.get(i - 1).getCost();
                 capacity = capacity - (int) things.get(i - 1).getWeight();
             }
         }
-        Collections.sort(items);
         return items;
+    }
+
+    /**
+     * We can't effectively solve 0-1 Knapsack problem for non-integer
+     * values of weights, so we need to scale them to integers and
+     * for that the scale factor need to be calculated.
+     * @param things list of parsed items.
+     * @return factor value.
+     */
+    protected static int calculateFactor(List<Thing> things) {
+        int result = 1;
+        for (Thing thing : things) {
+            if (hasDecimal(thing.getWeight())) {
+                result = 10;
+            }
+            if (hasCentesimal(thing.getWeight())) {
+                return 100;
+            }
+        }
+        return result;
+    }
+
+    private static boolean hasCentesimal(double number) {
+        return (number * 10) % 1 != 0;
+    }
+
+    private static boolean hasDecimal(double number) {
+        return number % 1 != 0;
     }
 
 }

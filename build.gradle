@@ -11,6 +11,13 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
 dependencies {
     compile 'org.projectlombok:lombok:1.18.8'
 

@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class Thing {
 
-    int id;
+    int index;
 
     double weight;
 
