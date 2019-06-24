@@ -55,4 +55,5 @@ This is gradle project, for compiling dependency file just run
 
 Gradle will build jar file in directory /build/libs/packer-0.0.1.jar
 
+Project uses Lombok annotations, the IDE should be configured to support them.
 Test coverage is 100%.

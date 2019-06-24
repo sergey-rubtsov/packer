@@ -7,6 +7,7 @@ import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -51,7 +52,7 @@ public class ParserTest {
     public void parseThingsMaxItemWeightError() {
         String test = getTestUtfString("(1,101,€29) (2,14.55,€74)");
         thrown.expect(APIException.class);
-        thrown.expectMessage(equalTo("Max weight of an item must be ≤ 100, but input weight is 101.00"));
+        thrown.expectMessage(startsWith("Max weight of an item must be ≤ 100, but input weight is 101"));
         Parser.parseThings(test);
     }
 
