@@ -3,19 +3,25 @@
 ## Problem
 It is needed to send a package with different things.
 Each thing inside the package has such parameters as index number, weight and cost. 
-The package has a weight limit. 
+The package has a weight limit.
+
 The goal is to determine which things to put into the package so that the total weight is less than or equal to the package limit and the total cost is as large as possible.
+
 It would be preferable to send a package which weights less in case there is more than one package with the same price.
 ## Solution
 The problem is well known decision problem, form of the knapsack problem.
+
 It is NP-complete, thus there is no known algorithm both correct and fast (polynomial-time) in all cases.
 This dynamic programming solution uses an algorithm for solving the 0/1 knapsack problem because of its high performance.
-It runs in pseudo-polynomial time. 
+
+It runs in pseudo-polynomial time.
+
 Time Complexity: O(nW) and O(nW) space where n is the number of items and W is the capacity of package.
 ## Input sample
 The method with signature
 ``` public static String pack(String filePath) throws APIException ```
-accepts as its argument a path to a filename. 
+accepts as its argument a path to a filename.
+
 The input file contains several lines. Each line is one package.
 Each line contains the weight that the package can take (before the colon) and the list of things you
 need to choose. Each thing is enclosed in parentheses where the 1st number is a thing's index number,
