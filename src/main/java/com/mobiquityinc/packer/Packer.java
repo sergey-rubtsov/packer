@@ -39,9 +39,11 @@ public class Packer {
     }
 
     /**
+     * Determines set of things that you put into the package and sort them.
      * @param capacity weight limit of package.
      * @param things the list of all things for the package.
-     * @return the list of things need to be chosen.
+     * @return the sorted set of things' indexes need to be chosen,
+     * or symbol '-' if package is empty.
      */
     protected static String processPackage(int capacity, List<Thing> things) {
         List<Integer> items = solveUnboundedKnapsackProblem(capacity, things);
@@ -60,9 +62,12 @@ public class Packer {
      * the thing which weights less.
      * @param capacity weight limit of package.
      * @param things the list of all things for the package.
-     * @return the list of things need to be chosen.
+     * @return the list of things' indexes need to be chosen.
      */
     private static List<Integer> solveUnboundedKnapsackProblem(int capacity, List<Thing> things) {
+        if (things.isEmpty() || capacity == 0) {
+            return Collections.emptyList();
+        }
         int factor = calculateFactor(things);
         //to send a package which weights less in case there is more than one package with the
         //same price, we need to group them by cost and sort by weight.
@@ -101,7 +106,7 @@ public class Packer {
      * values of weights, so we need to scale them to integers and
      * for that the scale factor need to be calculated.
      * @param things list of parsed items.
-     * @return factor value.
+     * @return factor value can be 1, 10 or 100.
      */
     protected static int calculateFactor(List<Thing> things) {
         int result = 1;

@@ -10,7 +10,6 @@ import static org.junit.Assert.*;
 
 public class PackerTest {
 
-
     @Test
     public void pack() {
         ClassLoader classLoader = PackerTest.class.getClassLoader();
@@ -22,6 +21,16 @@ public class PackerTest {
                 "2,7\n" +
                 "8,9";
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void packEmptyPackage() {
+        List<Thing> things = Collections.emptyList();
+        String result = Packer.processPackage(4, things);
+        assertEquals("-", result);
+        things = Parser.parseThings("(1,2,€3) (2,1,€3) (3,2,€6)");
+        result = Packer.processPackage(0, things);
+        assertEquals("-", result);
     }
 
     @Test
