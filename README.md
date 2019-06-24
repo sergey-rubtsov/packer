@@ -4,7 +4,7 @@
 It is needed to send a package with different things.
 Each thing inside the package has such parameters as index number, weight and cost. 
 The package has a weight limit. 
-Our goal is to determine which things to put into the package so that the total weight is less than or equal to the package limit and the total cost is as large as possible.
+The goal is to determine which things to put into the package so that the total weight is less than or equal to the package limit and the total cost is as large as possible.
 It would be preferable to send a package which weights less in case there is more than one package with the same price.
 ## Solution
 The problem is well known decision problem, form of the knapsack problem.
@@ -36,9 +36,9 @@ For each set of things that we put into the package provided a list (items’ in
 ```
 ## Constraints
 1. It throws an APIException if incorrect are being passed.
-2. Max weight that a package can take is ≤ 100
-3. There might be up to 15 items you need to choose from
-4. Max weight and cost of an item is ≤ 100
+2. Max weight that a package can take is ≤ 100.
+3. There might be up to 15 items you need to choose from.
+4. Max weight and cost of an item is ≤ 100.
 5. There is no effective algorithm for solving this problem for floating point weight values.
 Therefore, the weight values and the accuracy of calculations are rounded to hundredths.
 
@@ -48,4 +48,5 @@ This is gradle project, for compiling dependency file just run
 > gradle build
 
 Gradle will build jar file in directory /build/libs/packer-0.0.1.jar
-Test coverage is 100%
+
+Test coverage is 100%.
