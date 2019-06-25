@@ -41,7 +41,7 @@ For each set of things that we put into the package provided a list (items’ in
 8,9
 ```
 ## Constraints
-1. It throws an APIException if incorrect are being passed.
+1. It throws an APIException if incorrect input is being passed.
 2. Max weight that a package can take is ≤ 100.
 3. There might be up to 15 items you need to choose from.
 4. Max weight and cost of an item is ≤ 100.
